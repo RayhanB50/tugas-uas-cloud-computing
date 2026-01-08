@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pesan Makanan</title>
+</head>
+<body>
+
+<h2>Pesan Makanan</h2>
+
+<input id="nama" placeholder="Nama"><br><br>
+<input id="menu" placeholder="Menu"><br><br>
+<input id="jumlah" type="number" placeholder="Jumlah"><br><br>
+
+<button type="button" onclick="pesan()">Pesan</button>
+
+<p><b>Order ID:</b> <span id="orderId">-</span></p>
+
+<hr>
+
+<h3>Cek Status Pesanan</h3>
+<input id="cekId" placeholder="Masukkan Order ID">
+<button type="button" onclick="cekStatus()">Cek Status</button>
+
+<p id="status"></p>
+
+<script>
+const API = "https://cmni4dknqd.execute-api.ap-southeast-1.amazonaws.com/prod";
+
+async function pesan() {
+  try {
+    const res = await fetch(API + "/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        nama: document.getElementById("nama").value,
+        menu: document.getElementById("menu").value,
+        jumlah: document.getElementById("jumlah").value
+      })
+    });
+
+    const data = await res.json();
+    console.log("RESPON API:", data);
+
+    if (data.order_id) {
+      document.getElementById("orderId").innerText = data.order_id;
+    } else {
+      alert("Order ID tidak diterima");
+    }
+
+  } catch (err) {
+    alert("Gagal pesan");
+    console.error(err);
+  }
+}
+
+async function cekStatus() {
+  const id = document.getElementById("cekId").value;
+
+  const res = await fetch(API + "/order/" + id);
+  const data = await res.json();
+
+  document.getElementById("status").innerText =
+    data.status || data.message;
+}
+</script>
+
+</body>
+</html>

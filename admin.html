@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard Admin</title>
+</head>
+<body>
+
+<h2>Dashboard Admin</h2>
+
+<table border="1">
+  <thead>
+    <tr>
+      <th>Order ID</th>
+      <th>Menu</th>
+      <th>Jumlah</th>
+      <th>Status</th>
+      <th>Aksi</th>
+    </tr>
+  </thead>
+  <tbody id="data"></tbody>
+</table>
+
+<script>
+const API = "https://cmni4dknqd.execute-api.ap-southeast-1.amazonaws.com/prod";
+
+async function loadData() {
+  const res = await fetch(API + "/admin/orders");
+  const orders = await res.json();
+
+  const tbody = document.getElementById("data");
+  tbody.innerHTML = "";
+
+  orders.forEach(o => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${o.order_id}</td>
+        <td>${o.menu}</td>
+        <td>${o.jumlah}</td>
+        <td>
+          <select onchange="ubahStatus('${o.order_id}', this.value)">
+            <option ${o.status==="Menunggu Antrian"?"selected":""}>Menunggu Antrian</option>
+            <option ${o.status==="Sedang Diproses"?"selected":""}>Sedang Diproses</option>
+            <option ${o.status==="Selesai"?"selected":""}>Selesai</option>
+          </select>
+        </td>
+        <td>
+          <button onclick="hapus('${o.order_id}')">Hapus</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function ubahStatus(id, status) {
+  await fetch(API + "/admin/order/" + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  });
+}
+
+async function hapus(id) {
+  if (!confirm("Hapus pesanan?")) return;
+
+  await fetch(API + "/admin/order/" + id, {
+    method: "DELETE"
+  });
+
+  loadData();
+}
+
+loadData();
+</script>
+
+</body>
+</html>
